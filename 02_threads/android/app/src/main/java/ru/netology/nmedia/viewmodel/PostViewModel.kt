@@ -46,6 +46,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         _data.value = FeedModel(loading = false)
     }
 
+
     fun save() {
         val edit = edited.value ?: empty
         repository.saveAsync(edit, object : PostRepository.Callback<Post> {
