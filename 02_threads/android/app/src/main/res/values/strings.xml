@@ -21,4 +21,6 @@
     <string name="channel_remote_name">Server notifications</string>
     <string name="channel_remote_description">Notifications from remote server</string>
     <string name="refresh_menu">Refresh</string>
+    <string name="load">load</string>
+    <string name="description_logo">logo</string>
 </resources>
