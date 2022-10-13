@@ -2,10 +2,13 @@ package ru.netology.nmedia.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.PopupMenu
+import androidx.annotation.DrawableRes
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.dto.Post
@@ -17,6 +20,10 @@ interface OnInteractionListener {
     fun onShare(post: Post) {}
     fun onRefresh()
 }
+
+private const val AVATARS_URL_PREFIX = "http://10.0.2.2:9999/avatars/"
+private const val IMAGES_URL_PREFIX = "http://10.0.2.2:9999/images/"
+
 
 class PostsAdapter(
     private val onInteractionListener: OnInteractionListener,
@@ -38,6 +45,7 @@ class PostViewHolder(
     private val onInteractionListener: OnInteractionListener,
 ) : RecyclerView.ViewHolder(binding.root) {
 
+
     fun bind(post: Post) {
         binding.apply {
             author.text = post.author
@@ -46,6 +54,7 @@ class PostViewHolder(
             // в адаптере
             like.isChecked = post.likedByMe
             like.text = "${post.likes}"
+            avatar.loadAvatar(post)
 
             menu.setOnClickListener {
                 PopupMenu(it.context, it).apply {
@@ -91,3 +100,15 @@ class PostDiffCallback : DiffUtil.ItemCallback<Post>() {
         return oldItem == newItem
     }
 }
+
+private fun ImageView.loadAvatar(
+    post: Post,  @DrawableRes placeholder: Int = R.drawable.ic_loading_100dp
+) {
+    val url = AVATARS_URL_PREFIX + post.authorAvatar
+    Glide.with(this)
+        .load(url)
+        .placeholder(R.drawable.ic_loading_100dp)
+        .error(R.drawable.ic_error_100dp)
+        .circleCrop()
+        .timeout(10_000)
+        .into(this) }
