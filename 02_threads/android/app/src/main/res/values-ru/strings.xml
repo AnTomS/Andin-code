@@ -21,4 +21,9 @@
     <string name="notification_user_liked">%1$s поставил лайк посту %2$s</string>
     <string name="channel_remote_name">Уведомления с сервера</string>
     <string name="channel_remote_description">Уведомления с удалённого сервера</string>
+    <string name="refresh_menu">Обновить</string>
+    <string name="loading">Загрузка данных</string>
+    <string name="close_app">Закрыть приложение</string>
+    <string name="wait">Ожидайте</string>
+    <string name="load">Загрузка</string>
 </resources>

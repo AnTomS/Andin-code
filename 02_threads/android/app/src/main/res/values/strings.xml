@@ -22,5 +22,8 @@
     <string name="channel_remote_description">Notifications from remote server</string>
     <string name="refresh_menu">Refresh</string>
     <string name="load">load</string>
-    <string name="description_logo">logo</string>
+    <string name="description_logo" translatable="false">logo</string>
+    <string name="wait">Waiting</string>
+    <string name="close_app">close_app</string>
+    <string name="loading">Loading</string>
 </resources>
