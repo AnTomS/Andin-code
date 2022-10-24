@@ -4,7 +4,6 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.PopupMenu
-import androidx.annotation.DrawableRes
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -22,7 +21,6 @@ interface OnInteractionListener {
 }
 
 private const val AVATARS_URL_PREFIX = "http://10.0.2.2:9999/avatars/"
-private const val IMAGES_URL_PREFIX = "http://10.0.2.2:9999/images/"
 
 
 class PostsAdapter(
@@ -56,6 +54,7 @@ class PostViewHolder(
             like.text = "${post.likes}"
             avatar.loadAvatar(post)
 
+
             menu.setOnClickListener {
                 PopupMenu(it.context, it).apply {
                     inflate(R.menu.options_post)
@@ -74,7 +73,8 @@ class PostViewHolder(
 //                                return@setOnMenuItemClickListener true
 //                            }
 
-                            else -> false
+                            else
+                            -> false
                         }
                     }
                 }.show()
@@ -102,7 +102,7 @@ class PostDiffCallback : DiffUtil.ItemCallback<Post>() {
 }
 
 private fun ImageView.loadAvatar(
-    post: Post,  @DrawableRes placeholder: Int = R.drawable.ic_loading_100dp
+    post: Post
 ) {
     val url = AVATARS_URL_PREFIX + post.authorAvatar
     Glide.with(this)

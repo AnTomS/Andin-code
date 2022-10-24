@@ -115,15 +115,10 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         // Оптимистичная модель
         val oldPosts = _data.value?.posts.orEmpty()
 
-        repository.removeByIdAsync(id, object : PostRepository.Callback<Boolean> {
-            override fun onSuccess(post: Boolean) {
-                if (post) {
-                    val posts = _data.value?.posts.orEmpty()
-                        .filter { it.id != id }
-                    _data.postValue(FeedModel(posts = posts, empty = posts.isEmpty()))
-                } else {
-                    throw RuntimeException("Failed to remove the post (it = $id)")
-                }
+        repository.removeByIdAsync(id, object : PostRepository.Callback<Unit> {
+            override fun onSuccess(post: Unit) {
+                val posts = oldPosts.filter { it.id != id }
+                _data.value = FeedModel(posts = posts, empty = posts.isEmpty())
             }
 
 

@@ -1,6 +1,5 @@
 package ru.netology.nmedia.repository
 
-import okhttp3.Callback
 import ru.netology.nmedia.dto.Post
 
 interface PostRepository {
@@ -11,7 +10,7 @@ interface PostRepository {
     fun dislikeByIdAsync(id: Long, callback: Callback<Post>)
     fun shareById(id: Long)
     fun saveAsync(post: Post, callback: Callback<Post>)
-    fun removeByIdAsync(id: Long, callback: Callback<Boolean>)
+    fun removeByIdAsync(id: Long, callback: Callback<Unit>)
 
     interface Callback<T> {
         fun onSuccess(post: T)
