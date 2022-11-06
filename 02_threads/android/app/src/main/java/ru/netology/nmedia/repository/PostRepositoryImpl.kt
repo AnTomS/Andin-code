@@ -1,130 +1,46 @@
 package ru.netology.nmedia.repository
 
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.map
 import retrofit2.Call
 import retrofit2.Response
 import ru.netology.nmedia.api.PostsApi
+import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.entity.PostEntity
 
 
 private const val RESPONSE_CODE_SUCCESS = 200
 
-class PostRepositoryImpl : PostRepository {
-
-
-
-    override fun getAllAsync(callback: PostRepository.Callback<List<Post>>) {
-        PostsApi.retrofitService.getAll().enqueue(object : retrofit2.Callback<List<Post>> {
-            override fun onResponse(
-                call: Call<List<Post>>,
-                response: Response<List<Post>>
-            ) {
-                if (!response.isSuccessful) {
-                    callback.onError(RuntimeException(response.message()))
-                    return
-                }
-
-                callback.onSuccess(response.body() ?: throw RuntimeException("body is null"))
-            }
-
-            override fun onFailure(call: Call<List<Post>>, t: Throwable) {
-                callback.onError(RuntimeException(t))
-            }
-        })
+class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
+    override val data: LiveData<List<Post>> = postDao.getAll().map {
+        it.map(PostEntity::toDto)
     }
 
-    override fun likeByIdAsync(id: Long, callback: PostRepository.Callback<Post>) {
-        PostsApi.retrofitService.likeById(id).enqueue(object : retrofit2.Callback<Post> {
-            override fun onResponse(call: Call<Post>, response: Response<Post>) {
-                if (!response.isSuccessful) {
-                    callback.onError(
-                        RuntimeException("Error '${response.code()}' with message: '${response.message()}'")
-                    )
-                    return
-                }
+    override suspend fun getAllAsync(): List<Post> {
+        val posts = PostsApi.retrofitService.getAll()
+        postDao.insert(posts.map(PostEntity::fromDto))
+        return posts
+    }
 
-                val body = response.body() ?: run {
-                    callback.onError(
-                        RuntimeException("Error '${response.code()}' with message: '${response.message()}'")
-                    )
-                    return
-                }
-                callback.onSuccess(body)
-            }
-                override fun onFailure(call: Call<Post>, t: Throwable) {
-                    callback.onError(RuntimeException(t))
-                }
-            })
-        }
+    override suspend fun likeByIdAsync(id: Long) {
+    }
 
-    override fun dislikeByIdAsync(id: Long, callback: PostRepository.Callback<Post>) {
+    override suspend fun dislikeByIdAsync(id: Long) {
 
-        PostsApi.retrofitService.dislikeById(id).enqueue(object : retrofit2.Callback<Post> {
-            override fun onResponse(call: Call<Post>, response: Response<Post>) {
-                if (!response.isSuccessful) {
-                    callback.onError(
-                        RuntimeException("Error '${response.code()}' with message: '${response.message()}'")
-                    )
-                    return
-                }
+    }
 
-                val body = response.body() ?: run {
-                    callback.onError(
-                        RuntimeException("Error '${response.code()}' with message: '${response.message()}'")
-                    )
-                    return
-                }
-                callback.onSuccess(body)
-            }
-            override fun onFailure(call: Call<Post>, t: Throwable) {
-                callback.onError(RuntimeException(t))
-            }
-        })
+    override suspend fun shareById(id: Long) {
+
+    }
+
+    override suspend fun saveAsync(post: Post) {
+
+    }
+
+    override suspend fun removeByIdAsync(id: Long) {
     }
 
 
-    override fun shareById(id: Long) {
-    }
-
-    override fun saveAsync(post: Post, callback: PostRepository.Callback<Post>) {
-        PostsApi.retrofitService.save(post).enqueue(object : retrofit2.Callback<Post> {
-            override fun onResponse(
-                call: Call<Post>,
-                response: Response<Post>
-            ) {
-                if (!response.isSuccessful) {
-                    callback.onError(RuntimeException(response.message()))
-                    return
-                }
-
-                callback.onSuccess(response.body() ?: throw RuntimeException("body is null"))
-            }
-
-            override fun onFailure(call: Call<Post>, t: Throwable) {
-                callback.onError(RuntimeException(t))
-            }
-        })
-    }
-
-    override fun removeByIdAsync(id: Long, callback: PostRepository.Callback<Unit>) {
-
-        PostsApi.retrofitService.removeById(id).enqueue(object : retrofit2.Callback<Unit> {
-
-            override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
-                if (!response.isSuccessful) {
-                    callback.onError(RuntimeException(response.message()))
-                    return
-                }
-
-                if (response.code() == RESPONSE_CODE_SUCCESS) {
-                    callback.onSuccess(Unit)
-                }
-            }
-
-            override fun onFailure(call: Call<Unit>, t: Throwable) {
-                callback.onError(RuntimeException(t))
-            }
-        })
-    }
-
-    }
+}
