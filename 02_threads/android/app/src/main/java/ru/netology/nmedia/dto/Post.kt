@@ -11,6 +11,7 @@ data class Post(
     val likedByMe: Boolean,
     val likes: Int = 0,
 )
+
 data class Attachment(
     val url: String,
     val description: String?,

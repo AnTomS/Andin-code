@@ -111,4 +111,5 @@ private fun ImageView.loadAvatar(
         .error(R.drawable.ic_error_100dp)
         .circleCrop()
         .timeout(10_000)
-        .into(this) }
+        .into(this)
+}
