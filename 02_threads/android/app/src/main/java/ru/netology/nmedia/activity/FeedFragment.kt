@@ -9,17 +9,19 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.snackbar.Snackbar
 import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostsAdapter
 import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.viewmodel.PostViewModel
 import kotlin.system.exitProcess
 
 class FeedFragment : Fragment() {
 
-    private val viewModel: PostViewModel by viewModels(ownerProducer = ::requireParentFragment)
+    internal val viewModel: PostViewModel by viewModels(ownerProducer = ::requireParentFragment)
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -64,30 +66,45 @@ class FeedFragment : Fragment() {
         binding.list.adapter = adapter
         viewModel.data.observe(viewLifecycleOwner) { state ->
             adapter.submitList(state.posts)
+
+            binding.emptyText.isVisible = state.empty
+        }
+
+
+        viewModel.dataState.observe(viewLifecycleOwner) { state ->
             binding.progress.isVisible = state.loading
             binding.errorGroup.isVisible = state.error
-            binding.emptyText.isVisible = state.empty
+            binding.swipeRefresh.isRefreshing = state.refreshing
+            if (state.error) {
+                Snackbar.make(binding.root, R.string.error_loading, Snackbar.LENGTH_LONG)
+                    .setAction(R.string.retry_loading) { viewModel.loadPosts() }
+                    .setAction(R.string.close_app) {
+                        activity?.finish()
+                        exitProcess(0)
+                    }
+                    .show()
+            }
         }
 
         binding.retryButton.setOnClickListener {
             viewModel.loadPosts()
         }
 
-        binding.wait.setOnClickListener {
-            viewModel.loadPosts()
-        }
-
-        binding.close.setOnClickListener {
-            activity?.finish()
-            exitProcess(0)
-        }
+//        binding.wait.setOnClickListener {
+//            viewModel.loadPosts()
+//        }
+//
+//        binding.close.setOnClickListener {
+//            activity?.finish()
+//            exitProcess(0)
+//        }
 
         binding.fab.setOnClickListener {
             findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
         }
 
         binding.swipeRefresh.setOnRefreshListener {
-            viewModel.loadPosts()
+            viewModel.refresh()
             binding.swipeRefresh.isRefreshing = false
         }
 
