@@ -6,7 +6,7 @@ import ru.netology.nmedia.dto.Post
 interface PostRepository {
 
     val data: LiveData<List<Post>>
-    suspend fun getAllAsync(): List<Post>
+    suspend fun getAllAsync()
     suspend fun likeByIdAsync(id: Long)
     suspend fun dislikeByIdAsync(id: Long)
     suspend fun shareById(id: Long)

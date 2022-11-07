@@ -67,13 +67,18 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
 
     fun save() {
-        viewModelScope.launch {
-            edited.value?.let {
-                repository.saveAsync(it)
-                _postCreated.value = Unit
+        edited.value?.let {
+            _postCreated.value = Unit
+            viewModelScope.launch {
+                try {
+                    repository.saveAsync(it)
+                    _dataState.value = FeedModelState()
+                } catch (e: Exception) {
+                    _dataState.value = FeedModelState(error = true)
+                }
             }
-            edited.value = empty
         }
+        edited.value = empty
     }
 
 
@@ -90,24 +95,39 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun likeById(id: Long) {
-        viewModelScope.launch {
-            repository.likeByIdAsync(id)
-
+        if (data.value?.posts.orEmpty().filter { it.id == id }.none { it.likedByMe }) {
+            viewModelScope.launch {
+                try {
+                    repository.likeByIdAsync(id)
+                } catch (e: Exception) {
+                    _dataState.value = FeedModelState(error = true)
+                }
+            }
+        } else {
+            viewModelScope.launch {
+                try {
+                    repository.dislikeByIdAsync(id)
+                } catch (e: Exception) {
+                    _dataState.value = FeedModelState(error = true)
+                }
+            }
         }
     }
-
-    fun dislikeByid(id: Long) {
-        viewModelScope.launch {
-            repository.dislikeByIdAsync(id)
-        }
-    }
-
 
     fun removeById(id: Long) {
+        val posts = data.value?.posts.orEmpty()
+            .filter { it.id != id }
+        data.value?.copy(posts = posts, empty = posts.isEmpty())
+
         viewModelScope.launch {
-            repository.removeByIdAsync(id)
+            try {
+                repository.removeByIdAsync(id)
+            } catch (e: Exception) {
+                _dataState.value = FeedModelState(error = true)
+            }
         }
     }
+
 }
 
 
