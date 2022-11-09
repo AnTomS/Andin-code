@@ -107,6 +107,10 @@ class FeedFragment : Fragment() {
             binding.swipeRefresh.isRefreshing = false
         }
 
+        viewModel.newerCount.observe(viewLifecycleOwner) {
+            println("Never count $it")
+        }
+
         return binding.root
     }
 }
