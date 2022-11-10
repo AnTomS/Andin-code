@@ -111,6 +111,10 @@ class FeedFragment : Fragment() {
             println("Never count $it")
         }
 
+        binding.newPostFab.setOnClickListener {
+
+        }
+
         return binding.root
     }
 }
