@@ -26,4 +26,6 @@
     <string name="wait">Waiting</string>
     <string name="close_app">close_app</string>
     <string name="loading">Loading</string>
+    <string name="have_new_post">Есть новые посты</string>
+    <string name="new_post">Есть новые посты</string>
 </resources>
