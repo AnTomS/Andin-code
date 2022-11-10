@@ -2,8 +2,8 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_height="match_parent"
-    android:layout_width="match_parent">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <androidx.constraintlayout.widget.ConstraintLayout
 
@@ -11,13 +11,13 @@
         android:layout_height="match_parent">
 
         <Button
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:background="@color/design_default_color_primary_variant"
             android:text="Есть новые посты"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
 
         <TextView
@@ -132,22 +132,23 @@
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
         android:clickable="true"
         android:contentDescription="@string/add_post"
-        app:srcCompat="@drawable/ic_add_24dp"
-        android:layout_gravity="bottom|end"/>
+        app:srcCompat="@drawable/ic_add_24dp" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab1"
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/new_post_fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="top|center"
         android:layout_margin="@dimen/fab_margin"
         android:clickable="true"
-        android:text="@string/new_post"
         android:contentDescription="@string/have_new_post"
-        app:srcCompat="@drawable/ic_baseline_arrow_upward_24"
-        android:layout_gravity="top|center"/>
+        android:text="@string/new_post"
+        app:icon="@drawable/ic_baseline_arrow_upward_24" />
+
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
