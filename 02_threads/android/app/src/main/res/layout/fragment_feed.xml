@@ -138,7 +138,8 @@
         android:clickable="true"
         android:contentDescription="@string/have_new_post"
         android:text="@string/new_post"
-        app:icon="@drawable/ic_baseline_arrow_upward_24" />
+        app:icon="@drawable/ic_baseline_arrow_upward_24"
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"/>
 
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

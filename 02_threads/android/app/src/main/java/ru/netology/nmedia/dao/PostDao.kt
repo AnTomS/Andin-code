@@ -27,6 +27,7 @@ interface PostDao {
     suspend fun save(post: PostEntity) =
         if (post.id == 0L) insert(post) else updateContentById(post.id, post.content)
 
+
     @Query(
         """
         UPDATE PostEntity SET
@@ -39,4 +40,7 @@ interface PostDao {
 
     @Query("DELETE FROM PostEntity WHERE id = :id")
     suspend fun removeById(id: Long)
+
+    @Query("UPDATE PostEntity SET viewed = 0 WHERE viewed = 1")
+    suspend fun viewedPosts()
 }

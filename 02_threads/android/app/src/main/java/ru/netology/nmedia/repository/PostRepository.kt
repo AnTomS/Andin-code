@@ -9,7 +9,6 @@ interface PostRepository {
     fun getNeverCount(firstId: Long): Flow<Int>
     suspend fun getAllAsync()
     suspend fun updatePosts()
-    suspend fun getPostById(id: Long)
     suspend fun likeByIdAsync(id: Long)
     suspend fun dislikeByIdAsync(id: Long)
     suspend fun shareById(id: Long)

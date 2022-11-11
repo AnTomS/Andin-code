@@ -72,6 +72,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
         }
     }
+
     fun updatePosts() = viewModelScope.launch {
         try {
             _dataState.value = FeedModelState(loading = true)

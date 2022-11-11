@@ -89,15 +89,6 @@ class FeedFragment : Fragment() {
             viewModel.loadPosts()
         }
 
-//        binding.wait.setOnClickListener {
-//            viewModel.loadPosts()
-//        }
-//
-//        binding.close.setOnClickListener {
-//            activity?.finish()
-//            exitProcess(0)
-//        }
-
         binding.fab.setOnClickListener {
             findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
         }
@@ -108,11 +99,17 @@ class FeedFragment : Fragment() {
         }
 
         viewModel.newerCount.observe(viewLifecycleOwner) {
-            if (it > 0) binding.newPostFab.visibility = View.VISIBLE
+            if (it > 0) {
+                binding.newPostFab.text = getString(R.string.new_post)
+                binding.newPostFab.visibility = View.VISIBLE
+            }
+            println("Newer count: $it")
         }
 
         binding.newPostFab.setOnClickListener {
             binding.newPostFab.visibility = View.GONE
+            binding.list.smoothScrollToPosition(0)
+            viewModel.updatePosts()
         }
 
         return binding.root

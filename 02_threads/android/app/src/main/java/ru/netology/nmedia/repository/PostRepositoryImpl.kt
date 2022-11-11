@@ -6,6 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import okio.IOException
+import org.chromium.net.NetworkException
 import ru.netology.nmedia.api.PostsApi
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Post
@@ -64,24 +65,15 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
     }
 
     override suspend fun updatePosts() {
-    }
-
-
-    override suspend fun getPostById(id: Long) {
         try {
-            val response = PostsApi.retrofitService.getById(id)
-            if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
-            }
-
-            val body = response.body() ?: throw ApiError(response.code(), response.message())
-            postDao.insert(PostEntity.fromDto(body))
+            postDao.viewedPosts()
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {
             throw UnkError
         }
     }
+
 
     override suspend fun saveAsync(post: Post) {
         try {
