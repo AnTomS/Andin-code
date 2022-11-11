@@ -32,6 +32,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     private val _dataState = MutableLiveData(FeedModelState(Idle = true))
     val dataState: LiveData<FeedModelState>
         get() = _dataState
+
     val newerCount: LiveData<Int> = data.switchMap {
         repository.getNeverCount(it.posts.firstOrNull()?.id ?: 0L)
             .asLiveData(Dispatchers.Default)
@@ -41,7 +42,6 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     private val _postCreated = SingleLiveEvent<Unit>()
     val postCreated: LiveData<Unit>
         get() = _postCreated
-
 
     init {
         loadPosts()
@@ -70,6 +70,15 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 _dataState.value = FeedModelState(error = true)
             }
 
+        }
+    }
+    fun updatePosts() = viewModelScope.launch {
+        try {
+            _dataState.value = FeedModelState(loading = true)
+            repository.getAllAsync()
+            _dataState.value = FeedModelState()
+        } catch (e: Exception) {
+            _dataState.value = FeedModelState(error = true)
         }
     }
 

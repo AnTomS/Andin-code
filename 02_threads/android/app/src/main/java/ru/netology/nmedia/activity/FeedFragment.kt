@@ -108,11 +108,11 @@ class FeedFragment : Fragment() {
         }
 
         viewModel.newerCount.observe(viewLifecycleOwner) {
-            println("Never count $it")
+            if (it > 0) binding.newPostFab.visibility = View.VISIBLE
         }
 
         binding.newPostFab.setOnClickListener {
-
+            binding.newPostFab.visibility = View.GONE
         }
 
         return binding.root
