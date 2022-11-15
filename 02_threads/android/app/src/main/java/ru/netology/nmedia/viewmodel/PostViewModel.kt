@@ -47,10 +47,10 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         loadPosts()
     }
 
-    fun loadPosts() {
-        viewModelScope.launch {
-            _dataState.value = FeedModelState(loading = true)
+    fun loadPosts() = viewModelScope.launch {
+
             try {
+                _dataState.value = FeedModelState(loading = true)
                 repository.getAllAsync()
                 _dataState.value = FeedModelState()
             } catch (e: Exception) {
@@ -58,30 +58,30 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             }
 
         }
-    }
 
-    fun refresh() {
-        viewModelScope.launch {
-            _dataState.value = FeedModelState(refreshing = true)
-            try {
-                repository.getAllAsync()
-                _dataState.value = FeedModelState()
-            } catch (e: Exception) {
-                _dataState.value = FeedModelState(error = true)
-            }
 
-        }
-    }
-
-    fun updatePosts() = viewModelScope.launch {
+    fun loadNewPost() = viewModelScope.launch {
         try {
             _dataState.value = FeedModelState(loading = true)
-            repository.getAllAsync()
+            repository.updatePosts()
             _dataState.value = FeedModelState()
         } catch (e: Exception) {
             _dataState.value = FeedModelState(error = true)
         }
     }
+
+//    fun refresh() {
+//        viewModelScope.launch {
+//            _dataState.value = FeedModelState(refreshing = true)
+//            try {
+//                repository.getAllAsync()
+//                _dataState.value = FeedModelState()
+//            } catch (e: Exception) {
+//                _dataState.value = FeedModelState(error = true)
+//            }
+//
+//        }
+//    }
 
 
     fun save() {

@@ -85,18 +85,8 @@ class FeedFragment : Fragment() {
             }
         }
 
-        binding.retryButton.setOnClickListener {
-            viewModel.loadPosts()
-        }
+         binding.newPostFab.visibility = View.GONE
 
-        binding.fab.setOnClickListener {
-            findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
-        }
-
-        binding.swipeRefresh.setOnRefreshListener {
-            viewModel.refresh()
-            binding.swipeRefresh.isRefreshing = false
-        }
 
         viewModel.newerCount.observe(viewLifecycleOwner) {
             if (it > 0) {
@@ -106,10 +96,23 @@ class FeedFragment : Fragment() {
             println("Newer count: $it")
         }
 
+        binding.retryButton.setOnClickListener {
+            viewModel.loadPosts()
+        }
+
         binding.newPostFab.setOnClickListener {
             binding.newPostFab.visibility = View.GONE
             binding.list.smoothScrollToPosition(0)
-            viewModel.updatePosts()
+            viewModel.loadNewPost()
+        }
+
+        binding.fab.setOnClickListener {
+            findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+        }
+
+        binding.swipeRefresh.setOnRefreshListener {
+            viewModel.loadPosts()
+            binding.swipeRefresh.isRefreshing = false
         }
 
         return binding.root

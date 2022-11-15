@@ -6,7 +6,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import okio.IOException
-import org.chromium.net.NetworkException
 import ru.netology.nmedia.api.PostsApi
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Post
@@ -17,8 +16,6 @@ import ru.netology.nmedia.error.ApiError
 import ru.netology.nmedia.error.NetworkError
 import ru.netology.nmedia.error.UnkError
 
-
-private const val RESPONSE_CODE_SUCCESS = 200
 
 class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
     override val data: Flow<List<Post>> = postDao.getAll().map(List<PostEntity>::toDto)
@@ -46,17 +43,24 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
             throw UnkError
         }
     }
+        .flowOn(Dispatchers.Default)
 
 
     override suspend fun getAllAsync() {
+
         try {
+            postDao.getAll()
             val response = PostsApi.retrofitService.getAll()
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
 
             val body = response.body() ?: throw ApiError(response.code(), response.message())
-            postDao.insert(body.toEntity())
+            postDao.insert(body.toEntity()
+               .map {
+                   it.copy(viewed = true)
+                }
+            )
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {
