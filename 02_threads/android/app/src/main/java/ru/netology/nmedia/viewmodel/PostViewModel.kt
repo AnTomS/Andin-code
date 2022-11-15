@@ -49,21 +49,21 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     fun loadPosts() = viewModelScope.launch {
 
-            try {
-                _dataState.value = FeedModelState(loading = true)
-                repository.updatePosts()
-                _dataState.value = FeedModelState()
-            } catch (e: Exception) {
-                _dataState.value = FeedModelState(error = true)
-            }
-
+        try {
+            _dataState.value = FeedModelState(loading = true)
+            repository.getUnViewedPost()
+            _dataState.value = FeedModelState()
+        } catch (e: Exception) {
+            _dataState.value = FeedModelState(error = true)
         }
+
+    }
 
 
     fun loadNewPost() = viewModelScope.launch {
         try {
             _dataState.value = FeedModelState(loading = true)
-            repository.updatePosts()
+            repository.getUnViewedPost()
             _dataState.value = FeedModelState()
         } catch (e: Exception) {
             _dataState.value = FeedModelState(error = true)

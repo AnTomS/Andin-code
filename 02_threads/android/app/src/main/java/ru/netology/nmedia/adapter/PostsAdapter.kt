@@ -17,7 +17,6 @@ interface OnInteractionListener {
     fun onEdit(post: Post) {}
     fun onRemove(post: Post) {}
     fun onShare(post: Post) {}
-    fun onRefresh()
 }
 
 private const val AVATARS_URL_PREFIX = "http://10.0.2.2:9999/avatars/"
@@ -68,11 +67,6 @@ class PostViewHolder(
                                 onInteractionListener.onEdit(post)
                                 true
                             }
-//                            R.id.refresh -> {
-//                                onInteractionListener.onRefresh()
-//                                return@setOnMenuItemClickListener true
-//                            }
-
                             else
                             -> false
                         }

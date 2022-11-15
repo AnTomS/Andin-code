@@ -54,13 +54,6 @@ class FeedFragment : Fragment() {
                 startActivity(shareIntent)
             }
 
-            override fun onRefresh() {
-                binding.swipeRefresh.isRefreshing = true
-                viewModel.loadPosts()
-                binding.swipeRefresh.isRefreshing = false
-
-            }
-
         })
         binding.list.adapter = adapter
         viewModel.data.observe(viewLifecycleOwner) { state ->
@@ -85,7 +78,7 @@ class FeedFragment : Fragment() {
             }
         }
 
-         binding.newPostFab.visibility = View.GONE
+        binding.newPostFab.visibility = View.GONE
 
 
         viewModel.newerCount.observe(viewLifecycleOwner) {

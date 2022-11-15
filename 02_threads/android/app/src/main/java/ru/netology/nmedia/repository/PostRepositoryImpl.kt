@@ -31,7 +31,10 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
 
                 val body =
                     response.body() ?: throw ApiError(response.code(), response.message())
-                postDao.insert(body.toEntity())
+                postDao.insert(body.toEntity()
+                    .map {
+                        it.copy(viewed = false)
+                    })
                 emit(body.size)
                 delay(10_000L)
             }
@@ -49,7 +52,6 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
     override suspend fun getAllAsync() {
 
         try {
-            postDao.getAll()
             val response = PostsApi.retrofitService.getAll()
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
@@ -57,8 +59,8 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
 
             val body = response.body() ?: throw ApiError(response.code(), response.message())
             postDao.insert(body.toEntity()
-               .map {
-                   it.copy(viewed = true)
+                .map {
+                    it.copy(viewed = true)
                 }
             )
         } catch (e: IOException) {
@@ -68,7 +70,7 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
         }
     }
 
-    override suspend fun updatePosts() {
+    override suspend fun getUnViewedPost() {
         try {
             postDao.viewedPosts()
         } catch (e: IOException) {
@@ -87,7 +89,10 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
             }
 
             val body = response.body() ?: throw ApiError(response.code(), response.message())
-            postDao.insert(PostEntity.fromDto(body))
+            postDao.insert(
+                PostEntity.fromDto(body)
+                    .copy(viewed = true)
+            )
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {
@@ -96,7 +101,6 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
     }
 
     override suspend fun removeByIdAsync(id: Long) {
-        postDao.removeById(id)
         try {
             val response = PostsApi.retrofitService.removeById(id)
             if (!response.isSuccessful) {
@@ -110,14 +114,16 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
     }
 
     override suspend fun likeByIdAsync(id: Long) {
-        postDao.likeById(id)
         try {
             val response = PostsApi.retrofitService.likeById(id)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
             val body = response.body() ?: throw ApiError(response.code(), response.message())
-            postDao.insert(PostEntity.fromDto(body))
+            postDao.insert(
+                PostEntity.fromDto(body)
+                    .copy(viewed = true)
+            )
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {
@@ -126,14 +132,16 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
     }
 
     override suspend fun dislikeByIdAsync(id: Long) {
-        postDao.likeById(id)
         try {
             val response = PostsApi.retrofitService.dislikeById(id)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
             val body = response.body() ?: throw ApiError(response.code(), response.message())
-            postDao.insert(PostEntity.fromDto(body))
+            postDao.insert(
+                PostEntity.fromDto(body)
+                    .copy(viewed = true)
+            )
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {
@@ -146,7 +154,8 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
         try {
             val response = PostsApi.retrofitService.removeById(id)
             if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
+                throw ApiError(response.code(), response.message()
+                )
             }
         } catch (e: IOException) {
             throw NetworkError
