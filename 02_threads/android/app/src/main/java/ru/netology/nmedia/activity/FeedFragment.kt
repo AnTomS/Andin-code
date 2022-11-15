@@ -94,9 +94,9 @@ class FeedFragment : Fragment() {
         }
 
         binding.newPostFab.setOnClickListener {
+            viewModel.loadNewPosts()
             binding.newPostFab.visibility = View.GONE
             binding.list.smoothScrollToPosition(0)
-            viewModel.loadNewPost()
         }
 
         binding.fab.setOnClickListener {
@@ -104,7 +104,7 @@ class FeedFragment : Fragment() {
         }
 
         binding.swipeRefresh.setOnRefreshListener {
-            viewModel.loadPosts()
+            viewModel.loadNewPosts()
             binding.swipeRefresh.isRefreshing = false
         }
 
