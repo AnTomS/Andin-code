@@ -68,8 +68,12 @@ class FeedFragment : Fragment() {
             binding.errorGroup.isVisible = state.error
             binding.swipeRefresh.isRefreshing = state.refreshing
             if (state.error) {
-                Snackbar.make(binding.root, R.string.error_loading, Snackbar.LENGTH_LONG)
-                    .setAction(R.string.retry_loading) { viewModel.loadPosts() }
+                Snackbar.make(
+                    binding.root,
+                    R.string.error_loading,
+                    Snackbar.LENGTH_LONG )
+
+                    //.setAction(R.string.retry_loading) { viewModel.loadPosts() }
                     .setAction(R.string.close_app) {
                         activity?.finish()
                         exitProcess(0)
@@ -83,7 +87,6 @@ class FeedFragment : Fragment() {
 
         viewModel.newerCount.observe(viewLifecycleOwner) {
             if (it > 0) {
-                binding.newPostFab.text = getString(R.string.new_post)
                 binding.newPostFab.visibility = View.VISIBLE
             }
             println("Newer count: $it")
@@ -104,7 +107,7 @@ class FeedFragment : Fragment() {
         }
 
         binding.swipeRefresh.setOnRefreshListener {
-            viewModel.loadNewPosts()
+            viewModel.loadPosts()
             binding.swipeRefresh.isRefreshing = false
         }
 

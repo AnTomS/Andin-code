@@ -9,14 +9,14 @@ import ru.netology.nmedia.entity.PostEntity
 
 @Dao
 interface PostDao {
-    @Query("SELECT * FROM PostEntity ORDER BY id DESC")
+    @Query("SELECT * FROM PostEntity WHERE viewed = 1 ORDER BY id DESC")
     fun getAll(): Flow<List<PostEntity>>
 
-    @Query("SELECT COUNT(*) == 0 FROM PostEntity")
-    suspend fun isEmpty(): Boolean
-
-    @Query("SELECT COUNT(*)  FROM PostEntity")
-    suspend fun count(): Int
+//    @Query("SELECT COUNT(*) == 0 FROM PostEntity")
+//    suspend fun isEmpty(): Boolean
+//
+//    @Query("SELECT COUNT(*)  FROM PostEntity")
+//    suspend fun count(): Int
 
     @Insert(onConflict = REPLACE)
     suspend fun insert(post: PostEntity)
@@ -44,6 +44,6 @@ interface PostDao {
     @Query("DELETE FROM PostEntity WHERE id = :id")
     suspend fun removeById(id: Long)
 
-    @Query("UPDATE PostEntity SET viewed = 0 WHERE viewed = 1")
+    @Query("UPDATE PostEntity SET viewed = 1 WHERE viewed = 0")
     suspend fun viewedPosts()
 }
