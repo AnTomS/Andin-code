@@ -55,6 +55,7 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
 
     override suspend fun getAllAsync() {
         try {
+            postDao.getAll()
             val response = PostsApi.retrofitService.getAll()
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())

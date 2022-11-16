@@ -60,6 +60,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     fun loadPosts() = viewModelScope.launch {
         try {
             _dataState.value = FeedModelState(loading = true)
+            //repository.getAllAsync()
             repository.getUnViewedPost()
             _dataState.value = FeedModelState()
         } catch (e: Exception) {
