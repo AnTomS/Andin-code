@@ -9,18 +9,11 @@ import ru.netology.nmedia.entity.PostEntity
 
 @Dao
 interface PostDao {
-    @Query("SELECT * FROM PostEntity WHERE viewed = 1 ORDER BY id DESC")
+    @Query("SELECT * FROM PostEntity ORDER BY id DESC")
     fun getAll(): Flow<List<PostEntity>>
 
-    @Query("UPDATE PostEntity SET viewed = 1 WHERE viewed = 0")
-    suspend fun viewedPosts()
-
-
-//    @Query("SELECT COUNT(*) == 0 FROM PostEntity")
-//    suspend fun isEmpty(): Boolean
-//
-//    @Query("SELECT COUNT(*)  FROM PostEntity")
-//    suspend fun count(): Int
+    @Query("SELECT * FROM PostEntity WHERE visibility= 1 ORDER BY id DESC")
+    fun viewedPosts(): Flow<List<PostEntity>>
 
     @Insert(onConflict = REPLACE)
     suspend fun insert(post: PostEntity)
