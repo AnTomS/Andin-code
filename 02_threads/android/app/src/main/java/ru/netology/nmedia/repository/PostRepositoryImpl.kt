@@ -28,7 +28,6 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
     override fun getNeverCount(firstId: Long): Flow<Int> = flow {
         try {
             while (true) {
-                postDao.viewedPosts()
 
                 val response = PostsApi.retrofitService.getNewer(firstId)
                 if (!response.isSuccessful) {
