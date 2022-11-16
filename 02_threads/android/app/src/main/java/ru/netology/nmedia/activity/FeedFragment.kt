@@ -71,7 +71,8 @@ class FeedFragment : Fragment() {
                 Snackbar.make(
                     binding.root,
                     R.string.error_loading,
-                    Snackbar.LENGTH_LONG )
+                    Snackbar.LENGTH_LONG
+                )
 
                     .setAction(R.string.retry_loading) { viewModel.loadPosts() }
                     .setAction(R.string.close_app) {
