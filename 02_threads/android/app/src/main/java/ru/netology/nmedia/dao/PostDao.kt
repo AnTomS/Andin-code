@@ -13,7 +13,7 @@ interface PostDao {
     fun getAll(): Flow<List<PostEntity>>
 
     @Query("SELECT * FROM PostEntity WHERE visibility= 1 ORDER BY id DESC")
-    fun viewedPosts(): Flow<List<PostEntity>>
+    suspend fun viewedPosts()
 
     @Insert(onConflict = REPLACE)
     suspend fun insert(post: PostEntity)
