@@ -32,7 +32,9 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
 
                 val body =
                     response.body() ?: throw ApiError(response.code(), response.message())
-                postDao.insert(body.toEntity())
+                postDao.insert(body.toEntity()
+                 //   .map { it.copy(viewed = true) }
+                )
                 emit(body.size)
                 delay(10_000L)
             }
@@ -90,7 +92,7 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
             val body = response.body() ?: throw ApiError(response.code(), response.message())
             postDao.insert(
                 PostEntity.fromDto(body)
-                    .copy(viewed = true)
+             //       .copy(viewed = true)
             )
         } catch (e: IOException) {
             throw NetworkError
@@ -123,7 +125,7 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
             val body = response.body() ?: throw ApiError(response.code(), response.message())
             postDao.insert(
                 PostEntity.fromDto(body)
-                    .copy(viewed = true)
+  //                  .copy(viewed = true)
             )
         } catch (e: IOException) {
             throw NetworkError
@@ -141,7 +143,7 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
             val body = response.body() ?: throw ApiError(response.code(), response.message())
             postDao.insert(
                 PostEntity.fromDto(body)
-                    .copy(viewed = true)
+  //                  .copy(viewed = true)
             )
         } catch (e: IOException) {
             throw NetworkError
