@@ -15,6 +15,7 @@ import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostsAdapter
 import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.util.RetryTypes
 import ru.netology.nmedia.viewmodel.PostViewModel
 import kotlin.system.exitProcess
 
@@ -56,6 +57,7 @@ class FeedFragment : Fragment() {
 
         })
         binding.list.adapter = adapter
+
         viewModel.data.observe(viewLifecycleOwner) { state ->
             adapter.submitList(state.posts)
 
@@ -72,13 +74,15 @@ class FeedFragment : Fragment() {
                     binding.root,
                     R.string.error_loading,
                     Snackbar.LENGTH_LONG
-                )
-
-                    .setAction(R.string.retry_loading) { viewModel.loadPosts() }
-                    .setAction(R.string.close_app) {
-                        activity?.finish()
-                        exitProcess(0)
+                ).setAction(R.string.retry_loading) {
+                    when (state.retryType) {
+                        RetryTypes.LIKE -> viewModel.likeById(state.retryId)
+                        RetryTypes.UNLIKE -> viewModel.unlikeById(state.retryId)
+                        RetryTypes.SAVE -> viewModel.retrySave(state.retryPost)
+                        RetryTypes.REMOVE -> viewModel.removeById(state.retryId)
+                        else -> viewModel.loadPosts()
                     }
+                }
                     .show()
             }
         }

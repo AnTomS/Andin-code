@@ -19,13 +19,12 @@ import java.io.IOException
 
 class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
 
-    override val data: Flow<List<Post>> = postDao.getAll().map(List<PostEntity>::toDto)
+    override val data = postDao.getAll().map { it.toDto() }
         .flowOn(Dispatchers.Default)
 
     override fun getNeverCount(firstId: Long): Flow<Int> = flow {
         try {
             while (true) {
-
                 val response = PostsApi.retrofitService.getNewer(firstId)
                 if (!response.isSuccessful) {
                     throw ApiError(response.code(), response.message())
@@ -59,7 +58,7 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
             postDao.insert(
                 body.toEntity()
                     .map {
-                        it.copy(visibility = true)
+                        it.copy(viewed = true)
                     }
             )
         } catch (e: IOException) {
@@ -69,7 +68,7 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
         }
     }
 
-    override suspend fun getUnViewedPost() {
+    override suspend fun getNewPosts() {
         try {
             postDao.viewedPosts()
         } catch (e: IOException) {
@@ -91,7 +90,7 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
             val body = response.body() ?: throw ApiError(response.code(), response.message())
             postDao.insert(
                 PostEntity.fromDto(body)
-//                    .copy(viewed = true)
+                    .copy(viewed = true)
             )
         } catch (e: IOException) {
             throw NetworkError
@@ -124,7 +123,7 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
             val body = response.body() ?: throw ApiError(response.code(), response.message())
             postDao.insert(
                 PostEntity.fromDto(body)
-//                    .copy(viewed = true)
+                    .copy(viewed = true)
             )
         } catch (e: IOException) {
             throw NetworkError
@@ -142,7 +141,7 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
             val body = response.body() ?: throw ApiError(response.code(), response.message())
             postDao.insert(
                 PostEntity.fromDto(body)
-//                    .copy(viewed = true)
+                    .copy(viewed = true)
             )
         } catch (e: IOException) {
             throw NetworkError
