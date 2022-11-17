@@ -10,7 +10,7 @@ import ru.netology.nmedia.entity.PostEntity
 
 @Dao
 interface PostDao {
-    @Query("SELECT * FROM PostEntity WHERE viewed = 1 ORDER BY id DESC")
+    @Query("SELECT * FROM PostEntity ORDER BY id DESC")
     fun getAll(): Flow<List<PostEntity>>
 
     @Insert(onConflict = REPLACE)
@@ -38,8 +38,8 @@ interface PostDao {
     @Query("DELETE FROM PostEntity WHERE id = :id")
     suspend fun removeById(id: Long)
 
-    @Query("UPDATE PostEntity SET viewed = 1 WHERE viewed = 0")
-    suspend fun viewedPosts()
+    @Query("SELECT * FROM PostEntity WHERE viewed = 1 ORDER BY id DESC")
+    fun viewedPosts(): Flow<List<PostEntity>>
 
     fun List<PostEntity>.toDto(): List<Post> = map(PostEntity::toDto)
     fun List<Post>.toEntity(): List<PostEntity> = map(PostEntity::fromDto)

@@ -19,12 +19,13 @@ import java.io.IOException
 
 class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
 
-    override val data = postDao.getAll().map { it.toDto() }
+    override val data: Flow<List<Post>> = postDao.getAll().map { it.toDto() }
         .flowOn(Dispatchers.Default)
 
     override fun getNeverCount(firstId: Long): Flow<Int> = flow {
         try {
             while (true) {
+
                 val response = PostsApi.retrofitService.getNewer(firstId)
                 if (!response.isSuccessful) {
                     throw ApiError(response.code(), response.message())
@@ -32,10 +33,10 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
 
                 val body =
                     response.body() ?: throw ApiError(response.code(), response.message())
-                postDao.insert(
-                    body.toEntity()
-                    //       .map { it.copy(viewed = false) }
-                )
+//                postDao.insert(
+//                    body.toEntity()
+//                        .map { it.copy(viewed = false) }
+//                )
                 emit(body.size)
                 delay(10_000L)
             }
