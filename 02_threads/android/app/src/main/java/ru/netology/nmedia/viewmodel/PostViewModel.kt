@@ -7,11 +7,13 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import ru.netology.nmedia.api.PostsApi
 import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.repository.*
+import ru.netology.nmedia.util.RetryTypes
 import ru.netology.nmedia.util.SingleLiveEvent
 
 
@@ -28,7 +30,7 @@ private val empty = Post(
 class PostViewModel(application: Application) : AndroidViewModel(application) {
     // упрощённый вариант
     private val repository: PostRepository = PostRepositoryImpl(
-        AppDb.getInstance(context = application).postDao()
+        AppDb.getInstance(application).postDao()
     )
 
     val data: LiveData<FeedModel> =
@@ -58,10 +60,11 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun loadPosts() = viewModelScope.launch {
+
         try {
             _dataState.value = FeedModelState(loading = true)
-            //repository.getAllAsync()
-            repository.getUnViewedPost()
+            repository.getAllAsync()
+                //repository.getNewPosts()
             _dataState.value = FeedModelState()
         } catch (e: Exception) {
             _dataState.value = FeedModelState(error = true)
@@ -76,6 +79,20 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             _dataState.value = FeedModelState()
         } catch (e: Exception) {
             _dataState.value = FeedModelState(error = true)
+        }
+    }
+
+    fun retrySave(post: Post?) {
+        viewModelScope.launch {
+            try {
+                if (post != null) {
+                    PostsApi.retrofitService.save(post)
+                    loadPosts()
+                }
+            } catch (e: Exception) {
+                _dataState.value =
+                    FeedModelState(error = true, retryType = RetryTypes.SAVE, retryPost = post)
+            }
         }
     }
 
@@ -108,25 +125,23 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         edited.value = edited.value?.copy(content = text)
     }
 
-    fun likeById(id: Long) {
-        if (data.value?.posts.orEmpty().filter { it.id == id }.none { it.likedByMe }) {
-            viewModelScope.launch {
-                try {
-                    repository.likeByIdAsync(id)
-                } catch (e: Exception) {
-                    _dataState.value = FeedModelState(error = true)
-                }
-            }
-        } else {
-            viewModelScope.launch {
-                try {
-                    repository.dislikeByIdAsync(id)
-                } catch (e: Exception) {
-                    _dataState.value = FeedModelState(error = true)
-                }
-            }
+    fun likeById(id: Long) = viewModelScope.launch {
+        try {
+            repository.likeByIdAsync(id)
+        } catch (e: Exception) {
+            _dataState.value = FeedModelState(error = true)
         }
     }
+
+
+    fun unlikeById(id: Long) = viewModelScope.launch {
+        try {
+            repository.dislikeByIdAsync(id)
+        } catch (e: Exception) {
+            _dataState.value = FeedModelState(error = true, retryId = id)
+        }
+    }
+
 
     fun removeById(id: Long) {
         val posts = data.value?.posts.orEmpty()
@@ -145,7 +160,8 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     fun loadNewPosts() = viewModelScope.launch {
         try {
             _dataState.value = FeedModelState(loading = true)
-            repository.getUnViewedPost()
+            //repository.getAllAsync()
+            repository.getNewPosts()
             _dataState.value = FeedModelState()
         } catch (e: Exception) {
             _dataState.value = FeedModelState(error = true)
