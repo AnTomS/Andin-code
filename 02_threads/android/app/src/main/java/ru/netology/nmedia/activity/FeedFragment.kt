@@ -98,7 +98,7 @@ class FeedFragment : Fragment() {
         }
 
         binding.retryButton.setOnClickListener {
-            viewModel.refreshPosts()
+            viewModel.loadPosts()
         }
 
         binding.newPostFab.setOnClickListener {
@@ -112,7 +112,7 @@ class FeedFragment : Fragment() {
         }
 
         binding.swipeRefresh.setOnRefreshListener {
-            viewModel.refreshPosts()
+            viewModel.loadPosts()
             binding.swipeRefresh.isRefreshing = false
         }
 

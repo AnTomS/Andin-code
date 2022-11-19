@@ -63,8 +63,8 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
         try {
             _dataState.value = FeedModelState(loading = true)
-            // repository.getAllAsync()
-             repository.getNewPosts()
+            //repository.getAllAsync()
+            repository.getNewPosts()
             _dataState.value = FeedModelState()
         } catch (e: Exception) {
             _dataState.value = FeedModelState(error = true)
@@ -160,8 +160,8 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     fun loadNewPosts() = viewModelScope.launch {
         try {
             _dataState.value = FeedModelState(loading = true)
-            repository.getAllAsync()
-            // repository.getNewPosts()
+            //repository.getAllAsync()
+            repository.getNewPosts()
             _dataState.value = FeedModelState()
         } catch (e: Exception) {
             _dataState.value = FeedModelState(error = true)

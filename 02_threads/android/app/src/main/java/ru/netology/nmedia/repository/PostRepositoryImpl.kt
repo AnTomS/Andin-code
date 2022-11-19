@@ -19,40 +19,12 @@ import java.io.IOException
 
 class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
 
-    override val data: Flow<List<Post>> = postDao.getAll().map { it.toDto() }
+    override val data = postDao.getAll().map(List<PostEntity>::toDto)
         .flowOn(Dispatchers.Default)
-
-    override fun getNeverCount(firstId: Long): Flow<Int> = flow {
-        try {
-            while (true) {
-
-                val response = PostsApi.retrofitService.getNewer(firstId)
-                if (!response.isSuccessful) {
-                    throw ApiError(response.code(), response.message())
-                }
-
-                val body =
-                    response.body() ?: throw ApiError(response.code(), response.message())
-//                postDao.insert(
-//                    body.toEntity()
-//                        .map { it.copy(viewed = false) }
-//                )
-                emit(body.size)
-                delay(10_000L)
-            }
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: IOException) {
-            throw NetworkError
-        } catch (e: Exception) {
-            throw UnkError
-        }
-    }
-        .flowOn(Dispatchers.Default)
-
 
     override suspend fun getAllAsync() {
         try {
+            postDao.getAll()
             val response = PostsApi.retrofitService.getAll()
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
@@ -80,6 +52,35 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
         }
     }
 
+    override fun getNeverCount(firstId: Long): Flow<Int> = flow {
+        try {
+            while (true) {
+
+                val response = PostsApi.retrofitService.getNewer(firstId)
+                if (!response.isSuccessful) {
+                    throw ApiError(response.code(), response.message())
+                }
+
+                val body =
+                    response.body() ?: throw ApiError(response.code(), response.message())
+                postDao.insert(
+                    body.toEntity()
+                    //          .map { it.copy(viewed = false) }
+                )
+                emit(body.size)
+                delay(10_000L)
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: ApiError) {
+            throw e
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: Exception) {
+            throw UnkError
+        }
+    }
+        .flowOn(Dispatchers.Default)
 
     override suspend fun saveAsync(post: Post) {
         try {
@@ -92,7 +93,6 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
             val body = response.body() ?: throw ApiError(response.code(), response.message())
             postDao.insert(
                 PostEntity.fromDto(body)
-                    .copy(viewed = true)
             )
         } catch (e: IOException) {
             throw NetworkError
@@ -125,7 +125,6 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
             val body = response.body() ?: throw ApiError(response.code(), response.message())
             postDao.insert(
                 PostEntity.fromDto(body)
-                    .copy(viewed = true)
             )
         } catch (e: IOException) {
             throw NetworkError
@@ -136,6 +135,7 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
 
     override suspend fun dislikeByIdAsync(id: Long) {
         try {
+            postDao.likeById(id)
             val response = PostsApi.retrofitService.dislikeById(id)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
@@ -143,7 +143,6 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
             val body = response.body() ?: throw ApiError(response.code(), response.message())
             postDao.insert(
                 PostEntity.fromDto(body)
-                    .copy(viewed = true)
             )
         } catch (e: IOException) {
             throw NetworkError
