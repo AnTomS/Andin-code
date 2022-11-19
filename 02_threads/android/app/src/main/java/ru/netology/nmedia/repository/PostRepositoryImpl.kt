@@ -38,6 +38,7 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
                     response.body() ?: throw ApiError(response.code(), response.message())
                 postDao.insert(
                     body.toEntity()
+
                 )
                 emit(body.size)
                 delay(10_000L)
@@ -55,7 +56,7 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
 
     override suspend fun getAllAsync() {
         try {
-            postDao.getAll()
+            //postDao.getAll()
             val response = PostsApi.retrofitService.getAll()
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
@@ -63,9 +64,7 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
 
             val body = response.body() ?: throw ApiError(response.code(), response.message())
             postDao.insert(body.toEntity()
-                .map {
-                    it.copy(viewed = true)
-                }
+                .map { it.copy(viewed = true) }
             )
         } catch (e: IOException) {
             throw NetworkError
@@ -96,7 +95,6 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
             val body = response.body() ?: throw ApiError(response.code(), response.message())
             postDao.insert(
                 PostEntity.fromDto(body)
-                    .copy(viewed = true)
             )
         } catch (e: IOException) {
             throw NetworkError
@@ -129,7 +127,7 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
             val body = response.body() ?: throw ApiError(response.code(), response.message())
             postDao.insert(
                 PostEntity.fromDto(body)
-                    .copy(viewed = true)
+                    .copy(viewed = false)
             )
         } catch (e: IOException) {
             throw NetworkError
@@ -147,7 +145,7 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
             val body = response.body() ?: throw ApiError(response.code(), response.message())
             postDao.insert(
                 PostEntity.fromDto(body)
-                    .copy(viewed = true)
+                    .copy(viewed = false)
             )
         } catch (e: IOException) {
             throw NetworkError
