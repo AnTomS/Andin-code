@@ -24,8 +24,8 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
 
     override suspend fun getAllAsync() {
         try {
-            postDao.getAll()
             val response = PostsApi.retrofitService.getAll()
+
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -64,9 +64,7 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
                 val body =
                     response.body() ?: throw ApiError(response.code(), response.message())
                 postDao.insert(
-                    body.toEntity()
-                    //          .map { it.copy(viewed = false) }
-                )
+                    body.toEntity().map { it.copy(viewed = false) })
                 emit(body.size)
                 delay(10_000L)
             }
