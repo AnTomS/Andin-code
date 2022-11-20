@@ -53,7 +53,7 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
 
     override suspend fun getAllAsync() {
         try {
-            //postDao.getAll()
+            postDao.getAll()
             val response = PostsApi.retrofitService.getAll()
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
@@ -61,7 +61,7 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
 
             val body = response.body() ?: throw ApiError(response.code(), response.message())
             postDao.insert(body.toEntity()
-                .map { it.copy(viewed = true) }
+                .map { it.copy(viewed = false) }
             )
         } catch (e: IOException) {
             throw NetworkError
@@ -70,7 +70,8 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
         }
     }
 
-    override suspend fun getUnViewedPost() {
+    override suspend fun getNewPosts() {
+
         try {
             postDao.viewedPosts()
         } catch (e: IOException) {
@@ -124,7 +125,7 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
             val body = response.body() ?: throw ApiError(response.code(), response.message())
             postDao.insert(
                 PostEntity.fromDto(body)
-                    .copy(viewed = false)
+         //           .copy(viewed = false)
             )
         } catch (e: IOException) {
             throw NetworkError
@@ -135,6 +136,7 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
 
     override suspend fun dislikeByIdAsync(id: Long) {
         try {
+            //postDao.likeById(id)
             val response = PostsApi.retrofitService.dislikeById(id)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
@@ -142,7 +144,7 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
             val body = response.body() ?: throw ApiError(response.code(), response.message())
             postDao.insert(
                 PostEntity.fromDto(body)
-                    .copy(viewed = false)
+           //         .copy(viewed = false)
             )
         } catch (e: IOException) {
             throw NetworkError
