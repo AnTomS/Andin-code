@@ -10,7 +10,7 @@ data class Post(
     val published: String,
     val likedByMe: Boolean,
     val likes: Int = 0,
-    val viewed: Boolean
+    val viewed: Boolean = false
 )
 
 data class Attachment(
