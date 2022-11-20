@@ -15,7 +15,6 @@ import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostsAdapter
 import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.dto.Post
-import ru.netology.nmedia.util.RetryTypes
 import ru.netology.nmedia.viewmodel.PostViewModel
 import kotlin.system.exitProcess
 
@@ -57,7 +56,6 @@ class FeedFragment : Fragment() {
 
         })
         binding.list.adapter = adapter
-
         viewModel.data.observe(viewLifecycleOwner) { state ->
             adapter.submitList(state.posts)
 
@@ -70,19 +68,12 @@ class FeedFragment : Fragment() {
             binding.errorGroup.isVisible = state.error
             binding.swipeRefresh.isRefreshing = state.refreshing
             if (state.error) {
-                Snackbar.make(
-                    binding.root,
-                    R.string.error_loading,
-                    Snackbar.LENGTH_LONG
-                ).setAction(R.string.retry_loading) {
-                    when (state.retryType) {
-                        RetryTypes.LIKE -> viewModel.likeById(state.retryId)
-                        RetryTypes.UNLIKE -> viewModel.unlikeById(state.retryId)
-                        RetryTypes.SAVE -> viewModel.retrySave(state.retryPost)
-                        RetryTypes.REMOVE -> viewModel.removeById(state.retryId)
-                        else -> viewModel.loadPosts()
+                Snackbar.make(binding.root, R.string.error_loading, Snackbar.LENGTH_LONG)
+                    .setAction(R.string.retry_loading) { viewModel.loadPosts() }
+                    .setAction(R.string.close_app) {
+                        activity?.finish()
+                        exitProcess(0)
                     }
-                }
                     .show()
             }
         }
@@ -92,19 +83,20 @@ class FeedFragment : Fragment() {
 
         viewModel.newerCount.observe(viewLifecycleOwner) {
             if (it > 0) {
+                binding.newPostFab.text = getString(R.string.new_post)
                 binding.newPostFab.visibility = View.VISIBLE
             }
             println("Newer count: $it")
         }
 
         binding.retryButton.setOnClickListener {
-            viewModel.refreshPosts()
+            viewModel.loadPosts()
         }
 
         binding.newPostFab.setOnClickListener {
-            viewModel.loadNewPosts()
             binding.newPostFab.visibility = View.GONE
             binding.list.smoothScrollToPosition(0)
+            viewModel.loadNewPosts()
         }
 
         binding.fab.setOnClickListener {
@@ -112,7 +104,7 @@ class FeedFragment : Fragment() {
         }
 
         binding.swipeRefresh.setOnRefreshListener {
-            viewModel.refreshPosts()
+            viewModel.loadPosts()
             binding.swipeRefresh.isRefreshing = false
         }
 

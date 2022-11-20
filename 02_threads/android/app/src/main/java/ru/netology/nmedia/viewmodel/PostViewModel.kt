@@ -25,6 +25,7 @@ private val empty = Post(
     published = "",
     likedByMe = false,
     likes = 0,
+    viewed = false
 )
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
@@ -82,21 +83,6 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun retrySave(post: Post?) {
-        viewModelScope.launch {
-            try {
-                if (post != null) {
-                    PostsApi.retrofitService.save(post)
-                    loadPosts()
-                }
-            } catch (e: Exception) {
-                _dataState.value =
-                    FeedModelState(error = true, retryType = RetryTypes.SAVE, retryPost = post)
-            }
-        }
-    }
-
-
     fun save() {
         edited.value?.let {
 
@@ -125,20 +111,23 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         edited.value = edited.value?.copy(content = text)
     }
 
-    fun likeById(id: Long) = viewModelScope.launch {
-        try {
-            repository.likeByIdAsync(id)
-        } catch (e: Exception) {
-            _dataState.value = FeedModelState(error = true)
-        }
-    }
-
-
-    fun unlikeById(id: Long) = viewModelScope.launch {
-        try {
-            repository.dislikeByIdAsync(id)
-        } catch (e: Exception) {
-            _dataState.value = FeedModelState(error = true, retryId = id)
+    fun likeById(id: Long) {
+        if (data.value?.posts.orEmpty().filter { it.id == id }.none { it.likedByMe }) {
+            viewModelScope.launch {
+                try {
+                    repository.likeByIdAsync(id)
+                } catch (e: Exception) {
+                    _dataState.value = FeedModelState(error = true)
+                }
+            }
+        } else {
+            viewModelScope.launch {
+                try {
+                    repository.dislikeByIdAsync(id)
+                } catch (e: Exception) {
+                    _dataState.value = FeedModelState(error = true)
+                }
+            }
         }
     }
 
