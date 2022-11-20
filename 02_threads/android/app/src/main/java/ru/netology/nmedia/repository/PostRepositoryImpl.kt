@@ -22,9 +22,6 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
     override val data: Flow<List<Post>> = postDao.getAll().map(List<PostEntity>::toDto)
         .flowOn(Dispatchers.Default)
 
-//    override val data = postDao.getAll().map { it.toDto() }
-//        .flowOn(Dispatchers.Default)
-
     override fun getNeverCount(firstId: Long): Flow<Int> = flow {
         try {
             while (true) {
