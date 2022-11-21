@@ -97,6 +97,7 @@ class FeedFragment : Fragment() {
             binding.newPostFab.visibility = View.GONE
             binding.list.smoothScrollToPosition(0)
             viewModel.loadNewPosts()
+            //viewModel.loadPosts()
         }
 
         binding.fab.setOnClickListener {
