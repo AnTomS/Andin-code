@@ -70,7 +70,7 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
         }
     }
 
-    override suspend fun getNewPosts() {
+    override suspend fun readNewPosts() {
         try {
             postDao.viewedPosts()
         } catch (e: IOException) {

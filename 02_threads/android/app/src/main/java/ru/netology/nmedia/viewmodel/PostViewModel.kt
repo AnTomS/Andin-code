@@ -44,8 +44,15 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     val dataState: LiveData<FeedModelState>
         get() = _dataState
 
+//    val newerCount: LiveData<Int> = data.switchMap {
+//        repository.getNeverCount(it.posts.firstOrNull()?.id ?: 0L)
+//            .asLiveData(Dispatchers.Default)
+//    }
+
+    private val emptyNewerCount = MutableLiveData(0)
     val newerCount: LiveData<Int> = data.switchMap {
-        repository.getNeverCount(it.posts.firstOrNull()?.id ?: 0L)
+        val firstId = it.posts.firstOrNull()?.id ?: return@switchMap emptyNewerCount
+        repository.getNeverCount(firstId)
             .asLiveData(Dispatchers.Default)
     }
 
@@ -64,8 +71,8 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
         try {
             _dataState.value = FeedModelState(loading = true)
-            //repository.getAllAsync()
-            repository.getNewPosts()
+            repository.getAllAsync()
+            //repository.readNewPosts()
             _dataState.value = FeedModelState()
         } catch (e: Exception) {
             _dataState.value = FeedModelState(error = true)
@@ -150,7 +157,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         try {
             _dataState.value = FeedModelState(loading = true)
             repository.getAllAsync()
-            //repository.getNewPosts()
+            //repository.readNewPosts()
             _dataState.value = FeedModelState()
         } catch (e: Exception) {
             _dataState.value = FeedModelState(error = true)
