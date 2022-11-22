@@ -5,15 +5,14 @@ import androidx.lifecycle.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import ru.netology.nmedia.api.PostsApi
 import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.model.FeedModelState
-import ru.netology.nmedia.repository.*
-import ru.netology.nmedia.util.RetryTypes
+import ru.netology.nmedia.repository.PostRepository
+import ru.netology.nmedia.repository.PostRepositoryImpl
 import ru.netology.nmedia.util.SingleLiveEvent
 
 
@@ -35,7 +34,9 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     )
 
     val data: LiveData<FeedModel> =
-        repository.data.map { FeedModel(it, it.isEmpty()) }.asLiveData(Dispatchers.Default)
+        // Показываем только прочитанные
+        repository.data.map { FeedModel(it.filter(Post::viewed), it.isEmpty()) }
+            .asLiveData(Dispatchers.Default)
 
     private val edited = MutableLiveData(empty)
 
@@ -44,17 +45,22 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     val dataState: LiveData<FeedModelState>
         get() = _dataState
 
-    val newerCount: LiveData<Int> = data.switchMap {
-        repository.getNeverCount(it.posts.firstOrNull()?.id ?: 0L)
-            .asLiveData(Dispatchers.Default)
-    }
-
-//    private val emptyNewerCount = MutableLiveData(0)
-//    val newerCount: LiveData<Int> = data.switchMap {
-//        val firstId = it.posts.firstOrNull()?.id ?: return@switchMap emptyNewerCount
-//        repository.getNeverCount(firstId)
-//            .asLiveData(Dispatchers.Default)
-//    }
+    // Здесь нам нужны все посты в том числе скрытые. Иначе будем грузить одно и то же
+    val newerCount: LiveData<Int> = repository.data.flowOn(Dispatchers.Default)
+        .flatMapLatest {
+            val firstId = it.firstOrNull()?.id ?: 0L
+            // При начальной загрузке покажем прогрессбар
+            if (firstId == 0L) _dataState.value = _dataState.value?.copy(loading = true)
+            repository.getNeverCount(firstId)
+                .onEach {
+                    // Скроем прогрессбар и ошибку
+                    _dataState.value = _dataState.value?.copy(loading = false, error = false)
+                }.catch {
+                    // При начальной загрузке покажем ошибку, если не получилось
+                    if (firstId == 0L) _dataState.value = _dataState.value?.copy(error = true)
+                }
+        }
+        .asLiveData()
 
 
     private val _postCreated = SingleLiveEvent<Unit>()
@@ -62,10 +68,6 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         get() = _postCreated
 
     private val scope = MainScope()
-
-    init {
-        loadPosts()
-    }
 
     fun loadPosts() = viewModelScope.launch {
 
@@ -153,10 +155,10 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun loadNewPosts() = viewModelScope.launch {
+    fun readNewPosts() = viewModelScope.launch {
         try {
             _dataState.value = FeedModelState(loading = true)
-             repository.readNewPosts()
+            repository.readNewPosts()
             // repository.getAllAsync()
 
             _dataState.value = FeedModelState()
