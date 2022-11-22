@@ -16,11 +16,11 @@ interface PostDao {
     suspend fun viewedPosts()
 
 
-//    @Query("SELECT COUNT(*) == 0 FROM PostEntity")
-//    suspend fun isEmpty(): Boolean
-//
-//    @Query("SELECT COUNT(*)  FROM PostEntity")
-//    suspend fun count(): Int
+    @Query("SELECT COUNT(*) == 0 FROM PostEntity")
+    suspend fun isEmpty(): Boolean
+
+    @Query("SELECT COUNT(*) FROM PostEntity WHERE viewed = 0")
+    suspend fun getUnreadCount(): Int
 
     @Insert(onConflict = REPLACE)
     suspend fun insert(post: PostEntity)

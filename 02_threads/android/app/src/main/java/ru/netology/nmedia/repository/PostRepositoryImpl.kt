@@ -32,9 +32,16 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
                 val body =
                     response.body() ?: throw ApiError(response.code(), response.message())
                 postDao.insert(body.toEntity()
-                    .map {
-                        it.copy(viewed = false)
-                    })
+                    .let { posts ->
+                        val empty = postDao.isEmpty()
+                        // Если это начальная загрузка, покажем все посты.
+                        // Иначе скроем до нажатия на кнопку
+                        posts.map { it.copy(viewed = empty) }
+                    }
+                )
+                // Прочитаем из БД сколько действительно постов непрочитано.
+                // То, что вернул сервер может быть меньше
+                emit(postDao.getUnreadCount())
                 emit(body.size)
                 delay(10_000L)
             }
@@ -91,7 +98,7 @@ class PostRepositoryImpl(private val postDao: PostDao) : PostRepository {
             val body = response.body() ?: throw ApiError(response.code(), response.message())
             postDao.insert(
                 PostEntity.fromDto(body)
-                    .copy(viewed = true)
+                    //      .copy(viewed = true)
             )
         } catch (e: IOException) {
             throw NetworkError
