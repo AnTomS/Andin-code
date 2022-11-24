@@ -2,75 +2,105 @@ package ru.netology.nmedia.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import ru.netology.nmedia.api.PostsApi
 import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.repository.*
+import ru.netology.nmedia.util.RetryTypes
 import ru.netology.nmedia.util.SingleLiveEvent
 
 
 private val empty = Post(
     id = 0,
-    content = "",
     author = "",
+    authorAvatar = "",
+    content = "",
+    published = "",
     likedByMe = false,
     likes = 0,
-    published = ""
+    viewed = false
 )
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
     // упрощённый вариант
     private val repository: PostRepository = PostRepositoryImpl(
-        AppDb.getInstance(context = application).postDao()
+        AppDb.getInstance(application).postDao()
     )
 
-    val data: LiveData<FeedModel> = repository.data.map(::FeedModel)
-    private val _dataState = MutableLiveData(FeedModelState(Idle = true))
+    val data: LiveData<FeedModel> =
+        repository.data.map { FeedModel(it.filter(Post::viewed), it.isEmpty()) }
+            .asLiveData(Dispatchers.Default)
+
+    private val edited = MutableLiveData(empty)
+
+    private val _dataState = MutableLiveData(FeedModelState())
+
     val dataState: LiveData<FeedModelState>
         get() = _dataState
-    private val edited = MutableLiveData(empty)
+
+    val newerCount: LiveData<Int> = repository.data.flowOn(Dispatchers.Default)
+        .flatMapLatest {
+            val firstId = it.firstOrNull()?.id ?: 0L
+            // При начальной загрузке покажем прогрессбар
+            if (firstId == 0L) _dataState.value = _dataState.value?.copy(loading = true)
+            repository.getNeverCount(firstId)
+                .onEach {
+                    // Скроем прогрессбар и ошибку
+                    _dataState.value = _dataState.value?.copy(loading = false, error = false)
+                }.catch {
+                    // При начальной загрузке покажем ошибку, если не получилось
+                    if (firstId == 0L) _dataState.value = _dataState.value?.copy(error = true)
+                }
+        }
+        .asLiveData()
+
+
     private val _postCreated = SingleLiveEvent<Unit>()
     val postCreated: LiveData<Unit>
         get() = _postCreated
+
+    private val scope = MainScope()
 
     init {
         loadPosts()
     }
 
-    fun loadPosts() {
-        viewModelScope.launch {
+    fun loadPosts() = viewModelScope.launch {
+
+        try {
             _dataState.value = FeedModelState(loading = true)
-            try {
-                repository.getAllAsync()
-                _dataState.value = FeedModelState()
-            } catch (e: Exception) {
-                _dataState.value = FeedModelState(error = true)
-            }
-
+            repository.getAllAsync()
+            //repository.readNewPosts()
+            _dataState.value = FeedModelState()
+        } catch (e: Exception) {
+            _dataState.value = FeedModelState(error = true)
         }
+
     }
 
-    fun refresh() {
-        viewModelScope.launch {
+    fun refreshPosts() = viewModelScope.launch {
+        try {
             _dataState.value = FeedModelState(refreshing = true)
-            try {
-                repository.getAllAsync()
-                _dataState.value = FeedModelState()
-            } catch (e: Exception) {
-                _dataState.value = FeedModelState(error = true)
-            }
-
+            repository.getAllAsync()
+            _dataState.value = FeedModelState()
+        } catch (e: Exception) {
+            _dataState.value = FeedModelState(error = true)
         }
     }
-
 
     fun save() {
         edited.value?.let {
-            _postCreated.value = Unit
+
             viewModelScope.launch {
                 try {
+                    _postCreated.value = Unit
                     repository.saveAsync(it)
                     _dataState.value = FeedModelState()
                 } catch (e: Exception) {
@@ -80,7 +110,6 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         }
         edited.value = empty
     }
-
 
     fun edit(post: Post) {
         edited.value = post
@@ -114,6 +143,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+
     fun removeById(id: Long) {
         val posts = data.value?.posts.orEmpty()
             .filter { it.id != id }
@@ -128,6 +158,21 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun readNewPosts() = viewModelScope.launch {
+        try {
+            _dataState.value = FeedModelState(loading = true)
+            repository.readNewPosts()
+
+            _dataState.value = FeedModelState()
+        } catch (e: Exception) {
+            _dataState.value = FeedModelState(error = true)
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        scope.cancel()
+    }
 }
 
 

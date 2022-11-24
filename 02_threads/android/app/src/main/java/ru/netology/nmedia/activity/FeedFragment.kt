@@ -9,6 +9,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.OnInteractionListener
@@ -54,13 +55,6 @@ class FeedFragment : Fragment() {
                 startActivity(shareIntent)
             }
 
-            override fun onRefresh() {
-                binding.swipeRefresh.isRefreshing = true
-                viewModel.loadPosts()
-                binding.swipeRefresh.isRefreshing = false
-
-            }
-
         })
         binding.list.adapter = adapter
         viewModel.data.observe(viewLifecycleOwner) { state ->
@@ -68,6 +62,18 @@ class FeedFragment : Fragment() {
 
             binding.emptyText.isVisible = state.empty
         }
+
+
+        // Поскольку выполнение DiffUtil происходит асинхронно,
+        // нужно подписаться на момент вставки в адаптер,
+        // а не скроллить сразу по клику на newPostFab
+        adapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
+            override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+                if (positionStart == 0) {
+                    binding.list.smoothScrollToPosition(0)
+                }
+            }
+        })
 
 
         viewModel.dataState.observe(viewLifecycleOwner) { state ->
@@ -85,26 +91,29 @@ class FeedFragment : Fragment() {
             }
         }
 
+        binding.newPostFab.visibility = View.GONE
+
+
+        viewModel.newerCount.observe(viewLifecycleOwner) {
+            if (it > 0) {
+                binding.newPostFab.text = getString(R.string.new_post)
+                binding.newPostFab.visibility = View.VISIBLE
+            }
+            println("Newer count: $it")
+        }
+
         binding.retryButton.setOnClickListener {
             viewModel.loadPosts()
         }
 
-//        binding.wait.setOnClickListener {
-//            viewModel.loadPosts()
-//        }
-//
-//        binding.close.setOnClickListener {
-//            activity?.finish()
-//            exitProcess(0)
-//        }
+        binding.newPostFab.setOnClickListener {
+            binding.newPostFab.visibility = View.GONE
+            viewModel.readNewPosts()
+
+        }
 
         binding.fab.setOnClickListener {
             findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
-        }
-
-        binding.swipeRefresh.setOnRefreshListener {
-            viewModel.refresh()
-            binding.swipeRefresh.isRefreshing = false
         }
 
         return binding.root
